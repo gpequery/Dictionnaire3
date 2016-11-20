@@ -1,9 +1,9 @@
 # depslib dependency file v1.0
-1479638874 source:d:\greg\workspaces\codeblocks\dictionnaire3\main.c
+1479677489 source:d:\greg\workspaces\codeblocks\dictionnaire3\main.c
 	<stdio.h>
 	<stdlib.h>
 	"gestorth.c"
 
-1479641754 d:\greg\workspaces\codeblocks\dictionnaire3\gestorth.c
+1479677802 d:\greg\workspaces\codeblocks\dictionnaire3\gestorth.c
 	<dirent.h>
 

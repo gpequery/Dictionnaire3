@@ -1,12 +1,2 @@
-absolument
-accord
-bateau
-coquille
-date
-equation
-fille
-fin
-fini
-manger
-marteau
-miniature
+a
+bonjour

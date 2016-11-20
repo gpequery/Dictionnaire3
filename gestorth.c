@@ -5,12 +5,14 @@
 int my_strlen(char*);
 int my_strcmp(char*, char*);
 char my_cTolower(char c);
+char* my_tolower(char* word);
 char* my_strcat(char*, char*);  //Malloc !
 int getFiles();                 //Affiche la liste des fichiers
 char* getNameFile(int);         //Retourne le nom du fichier numero int
-char** getWords(char*);
+char*** getWords(char*, int*);
+char** getWordsLineToTab(char*);
 char* finalyWord(char*);        // Retourne le mot sans caractère speciale  Malloc !!
-int getCountWord(char*);
+short wordInDico(char*);        // Boolean : moot dans dico ? (char* mot a chercher)
 
 int my_strlen(char* word) {
     int count = 0;
@@ -52,6 +54,22 @@ char my_cTolower(char c) {
     } else {
         lower = c;
     }
+
+    return lower;
+}
+
+char* my_tolower(char* word) {
+    char* lower = malloc(sizeof(char)*(my_strlen(word)+1));
+    int i;
+
+    for (i=0; i< my_strlen(word); i++) {
+        if (word[i] >= 65 && word[i] <= 90) {
+            lower[i] = word[i] + 32;
+        } else {
+            lower[i] = word[i];
+        }
+    }
+    lower[i] = '\0';
 
     return lower;
 }
@@ -126,34 +144,64 @@ char* getNameFile(int numFile)  {
     return name;
 }
 
-char** getWords(char* nameFile) {
+char*** getWords(char* nameFile, int* size) {
+    char*** tabF = malloc(sizeof(char[25]) * 500);
+    char** tab = malloc(sizeof(char[25]) * 100);
+    int countLine = 0;
+
     char* pathFile = "LesFichiers/";
     pathFile = my_strcat(pathFile, nameFile);
     pathFile = my_strcat(pathFile, ".txt");
 
     FILE* file = fopen(pathFile, "r");
-    int countLine = 1;
-    int countWordInLine;
-    int i;
+
     if (file) {
+        char* line;
+        int countWordInLine;
         while(!feof(file)) {
-            char* line = malloc(sizeof(char) * 1000);
+
             fgets(line, 1000, file);
             line = finalyWord(line);
 
-            countWordInLine = getCountWord(line);
-
-            printf("%d : %s ", countWordInLine, line);
-            printf("\n");
+            tab = getWordsLineToTab(line);
+            tabF[countLine] = tab;
             countLine ++;
         }
-
         fclose(file);
     }
 
     free(pathFile);
+    *size = countLine;
 
-    return NULL;
+    return tabF;
+}
+
+char** getWordsLineToTab(char* ligne) {
+    char** tab = malloc(sizeof(char[25]) * 100);
+    int countWord = 0;
+
+    char* word;
+    char* buffer = strdup (ligne);
+
+
+    word = strtok(buffer, " ");
+
+    if (!wordInDico(my_tolower(word))) {
+        tab[countWord] = word;
+        countWord ++ ;
+    }
+
+
+    while (word != NULL) {
+        word = strtok(NULL, " ");
+        if (word != NULL && !wordInDico(my_tolower(word))) {
+            tab[countWord] = word;
+            countWord ++ ;
+        }
+    }
+
+    tab[countWord + 1] = '\0';
+    return tab;
 }
 
 char* finalyWord(char* word) {
@@ -173,15 +221,24 @@ char* finalyWord(char* word) {
     return result;
 }
 
-int getCountWord(char* line) {
-    int count = 0;
+short wordInDico(char* word) {
+    char* directoryDico = "LesDictionnaires\\Dictionnaire.txt";
+    int in = 0;
 
-    int i;
-    for (i = 0; i < my_strlen(line); i++) {
-        if ( line[i] == ' ' && i != my_strlen(line)-1 ) {
-            count ++;
+    if (my_strcmp(word, "") == 0) {
+        return 1;
+    } else {
+        FILE* dico = fopen(directoryDico, "r");
+        if (dico) {
+            char compare[50];
+            while(!feof(dico)) {
+                fscanf(dico, "%s", compare);
+                if ( my_strcmp(word, compare) == 0) {
+                    return 1;
+                }
+            }
+            fclose(dico);
         }
     }
-
-    return count + 1;
+    return in;
 }
