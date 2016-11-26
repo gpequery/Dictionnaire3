@@ -55,16 +55,7 @@ void accueil() {
 void menu(char* titre) {
     clearConsole(titre);
 
-    int size;
-    char*** tabWords = getWords(titre, &size);
-
-    int i;
-    int j;
-    printf("SIZE : %d\n", size);
-    for (i = 0; i < 2 ; i++) {
-        printf("%d. %s\n", i, tabWords[i][0]);
-    }
-
+    getWords(titre);
 
 }
 

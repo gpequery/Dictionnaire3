@@ -1,12 +1,1 @@
-absolument
-accord
-bateau
-coquille
-date
-etourdi
-fille
-fin
-fini
-manger
-marteau
-miniature
+absolument accord bateau coquille date etourdi fille fin fini manger marteau miniature

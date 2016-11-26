@@ -6,13 +6,32 @@ int my_strlen(char*);
 int my_strcmp(char*, char*);
 char my_cTolower(char c);
 char* my_tolower(char* word);
-char* my_strcat(char*, char*);  //Malloc !
-int getFiles();                 //Affiche la liste des fichiers
-char* getNameFile(int);         //Retourne le nom du fichier numero int
-char*** getWords(char*, int*);
+char* my_strcat(char*, char*);                                      //Malloc !
+int getFiles();                                                     //Affiche la liste des fichiers
+char* getNameFile(int);                                             //Retourne le nom du fichier numero int
+char*** getWords(char*);                                            //Affiche les mots du fichier char* absent dans le dico et les mots proches present dans le deco(retourne le tableau)
 char** getWordsLineToTab(char*);
-char* finalyWord(char*);        // Retourne le mot sans caractère speciale  Malloc !!
-short wordInDico(char*);        // Boolean : moot dans dico ? (char* mot a chercher)
+char* finalyWord(char*);                                            // Retourne le mot sans caractère speciale  Malloc !!
+short wordInDico(char*);                                            // Boolean : moot dans dico ? (char* mot a chercher)
+int getDiff(char*, char*);                                          // Retourne le nombre de difference entre le mot char* et char*,
+void afficherMotProche(char*, int, int, char*);                            // Affiche les mots proche de char* avec le seuil int, int nb ligne dans le fichier
+short isNewLetter(char* a, char letter, int i);                     //Boolean, Si la lettre char est présent dans le mot char* avant la position int
+short letterInOtherWord(char lettre, char* word, int lengthWord);
+void remakeLigne(char*, char*, char*);
+
+
+struct CountLettre {
+    char lettre;
+    int count;
+};
+typedef struct CountLettre CountLettre;
+
+struct Replace {
+    char* oldWorld;
+    char* newWorld;
+};
+typedef struct Replace Replace;
+
 
 int my_strlen(char* word) {
     int count = 0;
@@ -144,16 +163,16 @@ char* getNameFile(int numFile)  {
     return name;
 }
 
-char*** getWords(char* nameFile, int* size) {
+char*** getWords(char* nameFile) {
     char*** tabF = malloc(sizeof(char[25]) * 500);
     char** tab = malloc(sizeof(char[25]) * 100);
     int countLine = 0;
 
     char* pathFile = "LesFichiers/";
-    pathFile = my_strcat(pathFile, nameFile);
-    pathFile = my_strcat(pathFile, ".txt");
+    char* pathFile2 = my_strcat(pathFile, nameFile);
+    char* pathFile3 = my_strcat(pathFile2, ".txt");
 
-    FILE* file = fopen(pathFile, "r");
+    FILE* file = fopen(pathFile3, "r");
 
     if (file) {
         char* line;
@@ -171,10 +190,163 @@ char*** getWords(char* nameFile, int* size) {
     }
 
     free(pathFile);
-    *size = countLine;
+    free(pathFile3);
+
+    printf("Mots absent dans le dictionnaire : \n");
+    char** replaceWords = malloc(sizeof(char[50]) * countLine);
+    Replace* tabReplace = malloc(sizeof(Replace) * countLine);
+    int countReplace = 0 ;
+    int i;
+    int j;
+    for (i = 0; i < countLine ; i++) {
+        j = 0;
+        while (tabF[i][j]) {
+            color("36");
+            printf("Ligne %d : ", i+1);
+            color("33");
+            printf("%s \t", tabF[i][j]);
+            color("37");
+
+            //Affichage des mots proche de seuil 2 du mot absent
+            //Ajout du premier mot avec un seuil de 1 dans le tableau replaceWords avec le mot qu'il remplaceras.
+            printf("( ");
+            FILE* dico = fopen("LesDictionnaires\\Dictionnaire.txt", "r");
+            if (dico) {
+                short can = 1;
+
+                while (!feof(dico)) {
+                    char* curentWord = malloc(sizeof(char) * 25);
+                    fscanf(dico, "%s", curentWord);
+
+                    if ( getDiff(tabF[i][j], curentWord) <= 2 ) {
+                        if( getDiff(tabF[i][j], curentWord) == 1 ) {
+
+                            if (can) {
+                                color("32");
+                                printf("%s ", curentWord);
+                                color("37");
+
+
+                                tabReplace[countReplace].oldWorld = tabF[i][j];
+                                tabReplace[countReplace].newWorld = curentWord;
+
+                                countReplace ++;
+                                can = 0;
+                            } else {
+                                printf("%s ", curentWord);
+                            }
+                        } else {
+                            printf("%s ", curentWord);
+                        }
+                    }
+                }
+                fclose(dico);
+            }
+            printf(")\n");
+            j ++;
+        }
+    }
+    color("37");
+
+
+    printf("\n");
+
+    /*for (i = 0; i < countReplace; i++) {
+        printf("%s : %s\n", tabReplace[i].oldWorld, tabReplace[i].newWorld);
+    }*/
+
+    printf("\n");
+
+    //Remplacer les mot dans un nouveau fichier
+    char oldWord[25];
+    char newWord[25];
+
+    char* pathFileOLD = my_strcat(pathFile2, ".txt");
+    char* pathFileNEW = my_strcat(pathFile2, "_correction.txt");
+
+    FILE* oldFile = fopen(pathFileOLD, "r");
+    FILE* newFile = fopen(pathFileNEW, "w+");
+
+    if (oldFile && newFile) {
+        char* curentWord2;
+        char oldLine[1000];
+        short replace;
+        while(!feof(oldFile)) {
+            //fscanf(oldFile, "%s ", curentWord2);
+            //fprintf(newFile, "%s ", curentWord2);
+
+            fgets(oldLine, 1000, oldFile);  //Fgets pour avoir les mêmes retour à la ligne que le fichier d'origine
+
+            curentWord2 = strtok(oldLine, " ");
+
+            if (curentWord2 != NULL) {
+                if (curentWord2 != NULL) {
+                    //printf("%s ", curentWord2);
+
+                    replace = 0;
+                    for (i = 0; i < countReplace; i++) {
+                        if ( my_strcmp(tabReplace[i].oldWorld, curentWord2) == 0 ) {
+                            replace = 1;
+                            break;
+                        }
+                    }
+
+                    if (replace == 1) {
+                        fprintf(newFile, " %s", tabReplace[i].newWorld);
+                    } else {
+                        fprintf(newFile, " %s", curentWord2);
+                    }
+                }
+
+                while (curentWord2 != NULL) {
+                    curentWord2 = strtok(NULL, " ");
+                    if (curentWord2 != NULL) {
+                        //printf("%s ", curentWord2);
+
+                        replace = 0;
+                        for (i = 0; i < countReplace; i++) {
+                            if ( my_strcmp(tabReplace[i].oldWorld, curentWord2) == 0 ) {
+                                replace = 1;
+                                break;
+                            }
+                        }
+
+                        if (replace == 1) {
+                            fprintf(newFile, " %s", tabReplace[i].newWorld);
+                        } else {
+                            fprintf(newFile, " %s", curentWord2);
+                        }
+                    }
+                }
+            }
+
+
+
+        }
+        fclose(oldFile);
+        fclose(newFile);
+    }
+
+
+    free(pathFile2);
 
     return tabF;
 }
+
+/*void remakeLigne(char* pathFile, char* oldWord, char* newWord) {
+
+
+    char curentWord[50];
+    if (oldFile && newFile) {
+        while(!feof(oldFile)) {
+            fscanf(oldFile, "%s", curentWord);
+            fprintf(newFile, "%s ", curentWord);
+        }
+        fclose(oldFile);
+        fclose(newFile);
+    }
+}*/
+
 
 char** getWordsLineToTab(char* ligne) {
     char** tab = malloc(sizeof(char[25]) * 100);
@@ -242,3 +414,113 @@ short wordInDico(char* word) {
     }
     return in;
 }
+
+int getDiff(char* a, char* b) {
+    int result = 0;
+    int i;
+    int j;
+    int lengthA = my_strlen(a);
+    int lengthB = my_strlen(b);
+    int count;
+    int nbLettreA = 0;
+    int nbLettreB = 0;
+
+    CountLettre lettresA[lengthA];
+    CountLettre lettresB[lengthB];
+    //Count de chaque lettre de a dans la structure
+    for (i = 0; i < lengthA; i ++) {
+        count = 0;
+        if ( isNewLetter(a, a[i], i) ) {
+            for (j = 0; j < lengthA; j ++) {
+                if ( a[i] == a[j] ) {
+                    count ++;
+                }
+            }
+            lettresA[nbLettreA].count = count;
+            lettresA[nbLettreA].lettre = a[i];
+            nbLettreA ++;
+        }
+    }
+
+    //Count de chaque lettre de b dans la structure
+    for (i = 0; i < lengthB; i ++) {
+        count = 0;
+        if ( isNewLetter(b, b[i], i) ) {
+            for (j = 0; j < lengthB; j ++) {
+                if ( b[i] == b[j] ) {
+                    count ++;
+                }
+            }
+            lettresB[nbLettreB].count = count;
+            lettresB[nbLettreB].lettre = b[i];
+            nbLettreB ++;
+        }
+    }
+
+
+
+    if (nbLettreA >= nbLettreB) {
+        for (i = 0; i < nbLettreA; i ++) {
+            if (!letterInOtherWord(lettresA[i].lettre, b, nbLettreA)) {
+                result += lettresA[i].count;
+            } else {
+                for (j = 0; j < nbLettreB; j ++) {
+                    if (lettresA[i].lettre == lettresB[j].lettre) {
+                        if (lettresA[i].count >= lettresB[j].count) {
+                            result += lettresA[i].count - lettresB[j].count;
+                        } else {
+                            result += lettresB[j].count - lettresA[i].count;
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        for (i = 0; i < nbLettreB; i ++) {
+            if (!letterInOtherWord(lettresB[i].lettre, a, nbLettreB)) {
+                result += lettresB[i].count;
+            } else {
+                for (j = 0; j < nbLettreA; j ++) {
+                    if (lettresB[i].lettre == lettresA[j].lettre) {
+                        if (lettresB[i].count >= lettresA[j].count) {
+                            result += lettresB[i].count - lettresA[j].count;
+                        } else {
+                            result += lettresA[j].count - lettresB[i].count;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+short isNewLetter(char* a, char letter, int i) {
+    short result;
+    int j;
+
+    result = 1;
+    for (j = 0; j < i; j ++) {
+        if (a[j] == letter) {
+            result = 0;
+            break;
+        }
+    }
+
+    return result;
+}
+
+short letterInOtherWord(char lettre, char* word, int lengthWord) {
+    short result = 0;
+    int i;
+
+    for ( i = 0 ; i < lengthWord; i ++) {
+        if ( word[i] == lettre ) {
+            result = 1;
+        }
+    }
+
+    return result;
+}
+
