@@ -56,7 +56,6 @@ void menu(char* titre) {
     clearConsole(titre);
 
     getWords(titre);
-
 }
 
 

@@ -248,15 +248,6 @@ char*** getWords(char* nameFile) {
     }
     color("37");
 
-
-    printf("\n");
-
-    /*for (i = 0; i < countReplace; i++) {
-        printf("%s : %s\n", tabReplace[i].oldWorld, tabReplace[i].newWorld);
-    }*/
-
-    printf("\n");
-
     //Remplacer les mot dans un nouveau fichier
     char oldWord[25];
     char newWord[25];
@@ -319,34 +310,14 @@ char*** getWords(char* nameFile) {
                     }
                 }
             }
-
-
-
         }
         fclose(oldFile);
         fclose(newFile);
     }
-
-
     free(pathFile2);
 
     return tabF;
 }
-
-/*void remakeLigne(char* pathFile, char* oldWord, char* newWord) {
-
-
-    char curentWord[50];
-    if (oldFile && newFile) {
-        while(!feof(oldFile)) {
-            fscanf(oldFile, "%s", curentWord);
-            fprintf(newFile, "%s ", curentWord);
-        }
-        fclose(oldFile);
-        fclose(newFile);
-    }
-}*/
-
 
 char** getWordsLineToTab(char* ligne) {
     char** tab = malloc(sizeof(char[25]) * 100);
