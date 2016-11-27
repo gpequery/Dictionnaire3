@@ -56,6 +56,27 @@ void menu(char* titre) {
     clearConsole(titre);
 
     getWords(titre);
+
+    printf("\n\n");
+    printf("1. Retour \n");
+    printf("2. Quitter \n");
+
+
+    int action;
+
+    printf("\nQue voulez vous faire : ");
+    scanf("%d", &action);
+
+    switch (action) {
+        case 1 :
+            accueil();
+            break;
+        case 2 :
+            system("exit");
+            break;
+        default :
+            menu(titre);
+    }
 }
 
 

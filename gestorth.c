@@ -192,7 +192,7 @@ char*** getWords(char* nameFile) {
     free(pathFile);
     free(pathFile3);
 
-    printf("Mots absent dans le dictionnaire : \n");
+    printf("Mots absent dans le dictionnaire : \n\n");
     char** replaceWords = malloc(sizeof(char[50]) * countLine);
     Replace* tabReplace = malloc(sizeof(Replace) * countLine);
     int countReplace = 0 ;
@@ -263,8 +263,6 @@ char*** getWords(char* nameFile) {
         char oldLine[1000];
         short replace;
         while(!feof(oldFile)) {
-            //fscanf(oldFile, "%s ", curentWord2);
-            //fprintf(newFile, "%s ", curentWord2);
 
             fgets(oldLine, 1000, oldFile);  //Fgets pour avoir les mêmes retour à la ligne que le fichier d'origine
 
